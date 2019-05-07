@@ -7,6 +7,8 @@ that User.findByidAndUpdate() this syntax bypass this thus we have to change tha
 const userSchema=new mongoose.Schema({}) here we are creating new userschema({here we passesd the things that you
 want in your database}) 
 */
+const Task=require('../models/task')
+const jwt=require('jsonwebtoken')
 const mongoose=require('mongoose')
 const validator=require('validator')
 const bcrypt=require('bcrypt')
@@ -43,9 +45,37 @@ const userSchema=new mongoose.Schema({
                 throw new Error('Invalid Email')
             }
         }
-    }
+    },
+    tokens:[{
+        token:{
+            type:String,
+            required:true
+        }
+    }]
 })
 
+userSchema.virtual('tasks',{
+    ref:'Tasks',
+    localField:'_id',//it means localfield that is user id is a relationship between user id and task collection's owner field
+    foreignField:'owner'
+
+})
+
+
+userSchema.methods.toJSON= function(){
+    const user=this
+    const userObject=user.toObject();
+    delete userObject.tokens
+    delete userObject.password
+    return userObject
+}
+userSchema.methods.generateAutoToken=async function(){
+    const user=this
+    const token=jwt.sign({_id:user._id.toString()},'This is my project')
+    user.tokens=user.tokens.concat({token})
+    await user.save()
+    return token
+}
 userSchema.statics.findByCredentials=async function(email,password){
 const user=await User.findOne({email})
 
@@ -71,6 +101,14 @@ userSchema.pre('save',async function(next){
     next()//that mean we are done with the pre task that need to be done
     })
 
-const user=mongoose.model('User',userSchema)
 
-module.exports=user
+    // construct a middleware so that when user delete itself than alll the task related to it shoul be deleted
+    userSchema.pre('remove',async function(next){
+        const user=this
+       await Task.deleteMany({owner:user._id})
+        next()
+    })
+
+const User=mongoose.model('User',userSchema)
+
+module.exports=User

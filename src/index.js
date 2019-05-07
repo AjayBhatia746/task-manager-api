@@ -7,7 +7,10 @@ const taskrouter=require('./routers/task')
 const app=express()
 const port=process.env.PORT||3000
 
-
+// app.use((req,res,next)=>{//It is middleware function
+//     return res.status(503).send('All requestes are disabled')
+// //next() means now the routers code can run
+// })
 app.use(express.json())
 app.use(userrouter)// to use the router for user create update delete
 app.use(taskrouter)//to use the router for task create update delete
@@ -16,17 +19,14 @@ app.use(taskrouter)//to use the router for task create update delete
 app.listen(port,()=>{
     console.log('Server is on the port: ' + port)
 })
-// For providing security to our code we uses the hash function.Difference between hash and encrypt is that
-// we can convert the encrypted code back into the plane text. But for hash if we convert it into hash code than we can't convert
-//it the hashing technique that I have used here is bcyrpt 
 
-// const bcrypt= require('bcrypt')
-// const my_functon=async()=>{
-// const password='Hello'
-// const bcryptpassword=await bcrypt.hash(password,8)//uses await here because it return promise
-// console.log(password)
-// console.log(bcryptpassword)
-// const ismatch=await bcrypt.compare('Hello',bcryptpassword)
-// console.log(ismatch)
+
+// const main=async function(){
+//     // const task=await Task.findById('5cd136b617249832004f597c')
+//     // await task.populate('owner').execPopulate()
+//     // console.log(task.owner)
+//     const user=await User.findById('5cd1342d088cba32f0fc40f9')
+//     await user.populate('tasks').execPopulate()
+//     console.log(user.tasks)
 // }
-// my_functon()
+// main()

@@ -17,12 +17,33 @@ routertask.post('/task',auth,async(req,res)=>{
 })
 
 
-
+//here if we wan to get specific task like completed =true than we add parameters to query
+//GET/task?completed=true
+//GET/task?limit=4&skip=10
+//GET/task?sortBy=createdAt desc
 routertask.get('/task',auth,async(req,res)=>{
+        const match={}
+            const sort={}
+        if(req.query.completed){
+            match.completed=req.query.completed==='true'//if i did n't use the===true than it will return the true but that is string not boolean
+        }
+        if(req.query.sortBy){
+            const parts=req.query.sortBy.split(':')
+            sort[parts[0]]=parts[1]==='desc'?-1:1
+            
+        }
         
     try{
         //const task=await Task.find({owner:req.user._id})
-         await req.user.populate('tasks').execPopulate()//above or this work same 
+         await req.user.populate({path:'tasks',
+         match,
+         options:{
+                limit:parseInt(req.query.limit),
+                skip:parseInt(req.query.skip),
+                sort 
+         }
+                
+        }).execPopulate()//above or this work same 
         res.send(req.user.tasks)
     }catch(e){
             res.status(500).send(e.message)

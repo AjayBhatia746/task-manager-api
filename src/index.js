@@ -11,6 +11,28 @@ const port=process.env.PORT||3000
 //     return res.status(503).send('All requestes are disabled')
 // //next() means now the routers code can run
 // })
+
+// const multer=require('multer')
+// const upload=multer({
+//     dest:'images',
+//     limits:{
+//         fileSize:1000000,//it will limit the uploaded file size to 1mb
+//     },
+//     fileFilter(req,file,cb){
+//         if(!file.originalname.match(/\.(docx|doc)$/)){//Here regular expression are used under the //
+//            return cb(new Error('Enter the docx file'))
+//         }
+//         cb(undefined,true)
+//     }
+// })
+
+// app.post('/upload',upload.single('upload'),(req,res)=>{
+// res.send()
+// },(error,req,res,next)=>{
+// res.status(500).send({
+//     error:error.message
+// })
+// })
 app.use(express.json())
 app.use(userrouter)// to use the router for user create update delete
 app.use(taskrouter)//to use the router for task create update delete

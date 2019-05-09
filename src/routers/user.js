@@ -1,6 +1,8 @@
 const express=require('express')
 const User=require('../models/user')
 const auth=require('../middleware/auth')
+const multer=require('multer')
+const sharp=require('sharp')
 const router=new express.Router()
 //Here we divide all the routers here we create the new router and work require it in the index file and use
 //there using app.use we expoted the router made here and used it in the index file
@@ -105,9 +107,54 @@ res.send(req.user)
             res.status(500).send(e)
         }
     })
+    const upload=multer({
+        
+        limits:{
+            fileSize:10000000
+        },
+        fileFilter(req,file,cb){
+            if(!file.originalname.match(/\.(jpeg|jpg|png)$/)){
+                cb(new Error('Please upload the image only'))
+            }
+            cb(undefined,true)
+        }
+    })
+    router.post('/users/me/avatar',auth,upload.single('avatar'),async(req,res)=>{
+        const buffer=await sharp(req.file.buffer).resize({height:250,width:250}).png().toBuffer()
+        req.user.avatar=buffer
+        await req.user.save()
+        res.send()
+    },(error,req,res,next)=>{
+        res.status(500).send({
+            error:error.message
+        })
 
+    })
 
-
+    router.delete('/users/me/avatar',auth,upload.single('avatar'),async(req,res)=>{
+      try{
+          req.user.avatar=undefined
+        await req.user.save()
+        res.send()
+      }catch(e){
+        res.status(500).send(e.message)
+      }
+     
+        
+    })
+    router.get('/users/:id/avatar',async(req,res)=>{
+        try{
+            const user = await User.findById(req.params.id)
+          if(!user||!user.avatar){
+              throw new Error()
+          }
+          res.set('Content-Type','image/png')
+         res.send(user.avatar) 
+        }catch(e){
+            console.log(e.message)
+          res.status(404).send(e.message)
+        }
+    })
 module.exports=router
 
 

@@ -3,18 +3,22 @@ const User=require('../models/user')
 const auth=require('../middleware/auth')
 const multer=require('multer')
 const sharp=require('sharp')
+const {welcomeEmail,cancelAcount}=require('../emails/accounts')
 const router=new express.Router()
 //Here we divide all the routers here we create the new router and work require it in the index file and use
 //there using app.use we expoted the router made here and used it in the index file
 router.post('/users',async(req,res)=>{
     
     const user= new User(req.body)
-    const token=await user.generateAutoToken();
+    
     try{
+        const token=await user.generateAutoToken();
         await user.save()
+        welcomeEmail(user.email,user.name)
         res.status(201).send({user,token})
+        
     } catch(e){
-        res.status(500).send(e)
+        res.status(500).send(e.message)
     }
     //previously it was written as this when done by the promise chaining
     // user.save().then(()=>{
@@ -102,6 +106,7 @@ res.send(req.user)
     router.delete('/users/me',auth,async (req,res)=>{
         try{
            await req.user.remove()
+           cancelAcount(req.user.email,req.user.name)
             res.send(req.user)
         }catch(e){
             res.status(500).send(e)

@@ -5,7 +5,7 @@ const Task=require('./models/task')
 const userrouter=require('./routers/user')
 const taskrouter=require('./routers/task')
 const app=express()
-const port=process.env.PORT||3000
+const port=process.env.PORT
 
 // app.use((req,res,next)=>{//It is middleware function
 //     return res.status(503).send('All requestes are disabled')

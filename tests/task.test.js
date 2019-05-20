@@ -7,7 +7,7 @@ refactoring
 collabrating
 peace of mind
 */
-const {tipp,fahrenheitToCelsius,celsiusToFahrenheit,add}=require('../src/math')
+const {tipp,fahrenheitToCelsius,celsiusToFahrenheit,add}=require('./math')
 test('Frst test',()=>{
     const total=tipp(10,.3)
     expect(total).toBe(13)

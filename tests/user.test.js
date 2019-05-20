@@ -70,11 +70,49 @@ test('to delete the login user',async()=>{
 const response=await request(app).delete('/users/me')
 .set('Authorization','Bearer '+userone.tokens[0].token)
 .send().expect(200)
+
 const user=await User.findById(userone._id)
 expect(user).toBeNull()
 })
+
+
 test('to check deleting the unauthorised user',async()=>{
 await request(app).delete('/users/me')
 .send().expect(401)
 })
 
+
+
+test('should upload avatar image',async()=>{
+await request(app)
+    .post('/users/me/avatar')
+    .set('Authorization',`Bearer ${userone.tokens[0].token}`)
+    .attach('avatar','tests/fixtures/philly.jpg')
+    .expect(200)
+    const user=  await User.findById(userone._id)
+    expect(user.avatar).toEqual(expect.any(Buffer))
+
+})
+
+
+test('should update valid user field',async()=>{
+    await request(app)
+    .patch('/users/me')
+    .set('Authorization',`Bearer ${userone.tokens[0].token}`)
+    .send({
+        name:'Jess'
+    })
+    .expect(200)
+    const user= await User.findById(userone._id)
+    expect(user.name).toEqual('Jess')
+})
+test('should update valid field only',async()=>{
+    await request(app)
+    .patch('/users/me')
+    .set('Authorization',`Bearer ${userone.tokens[0].token}`)
+    .send({
+        location:'Jess'
+    })
+    .expect(400)
+    
+})

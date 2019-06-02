@@ -2,11 +2,26 @@ const express=require('express')
 const Task=require('../models/task')
 const auth=require('../middleware/auth')
 const routertask=new express.Router()
+const multer=require('multer')
+const sharp=require('sharp')
 
-routertask.post('/task',auth,async(req,res)=>{
+const upload=multer({
+     limits:{
+        fileSize:10000000
+    },
+    fileFilter(req,file,cb){
+        if(!file.originalname.match(/\.(jpeg|jpg|png)$/)){
+            cb(new Error('Please upload the image only'))
+        }
+        cb(undefined,true)
+    }
+})
+routertask.post('/task',auth,upload.single('upload'),async(req,res)=>{
+    const buffer=await sharp(req.file.buffer).resize({height:250,width:250}).png().toBuffer()
     const task=new Task({
         ...req.body,//...es6 spread operator
-        owner:req.user.id
+        owner:req.user.id,
+        avatar:buffer
     }) 
     try{
          await task.save()
@@ -14,7 +29,12 @@ routertask.post('/task',auth,async(req,res)=>{
     }catch(e){
             res.status(500).send(e)
     }
+},(error,req,res,next)=>{
+    res.status(500).send({
+        error:error.message
 })
+})
+
 
 
 //here if we wan to get specific task like completed =true than we add parameters to query
